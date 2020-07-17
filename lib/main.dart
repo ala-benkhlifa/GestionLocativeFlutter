@@ -1,7 +1,9 @@
 import 'package:charts_flutter/flutter.dart' as charts;
-import 'package:intl/date_symbol_data_local.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 void main() {
   initializeDateFormatting().then((_) => runApp(MyApp()));
@@ -25,22 +27,22 @@ class MyApp extends StatelessWidget {
 }
 
 class TousDashBoard extends StatelessWidget {
-
   static TextStyle optionStyle =
-  TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
+      TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: [Flexible(
-        flex: 1,
-        child: Center(
-          child: Text(
-            "Revenu / Maison",
-            style: optionStyle,
+      children: [
+        Flexible(
+          flex: 1,
+          child: Center(
+            child: Text(
+              "Revenu / Maison",
+              style: optionStyle,
+            ),
           ),
         ),
-      ),
         Flexible(
           flex: 3,
           child: GroupedBarChart.withSampleData(),
@@ -105,17 +107,13 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
             ),
           ),
         ),
-
       ],
     ),
     CalendarPage(title: "Calendrier"),
-    Text(
-      'Index 2: School',
-      style: TousDashBoard.optionStyle,
-    ),
+    AddPage(),
   ];
 
-  void _onItemTapped(int index) {
+  void _onBottomNavBarItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -147,7 +145,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
           ],
           currentIndex: _selectedIndex,
           selectedItemColor: Colors.blue[800],
-          onTap: _onItemTapped,
+          onTap: _onBottomNavBarItemTapped,
         ),
       ),
     );
@@ -235,11 +233,9 @@ class DonutAutoLabelChart extends StatelessWidget {
 
   DonutAutoLabelChart(this.seriesList, {this.animate});
 
-  /// Creates a [PieChart] with sample data and no transition.
   factory DonutAutoLabelChart.withSampleData() {
     return new DonutAutoLabelChart(
       _createSampleData(),
-      // Disable animations for image tests.
       animate: true,
     );
   }
@@ -248,21 +244,6 @@ class DonutAutoLabelChart extends StatelessWidget {
   Widget build(BuildContext context) {
     return new charts.PieChart(seriesList,
         animate: animate,
-        // Configure the width of the pie slices to 60px. The remaining space in
-        // the chart will be left as a hole in the center.
-        //
-        // [ArcLabelDecorator] will automatically position the label inside the
-        // arc if the label will fit. If the label will not fit, it will draw
-        // outside of the arc with a leader line. Labels can always display
-        // inside or outside using [LabelPosition].
-        //
-        // Text style for inside / outside can be controlled independently by
-        // setting [insideLabelStyleSpec] and [outsideLabelStyleSpec].
-        //
-        // Example configuring different styles for inside/outside:
-        //       new charts.ArcLabelDecorator(
-        //          insideLabelStyleSpec: new charts.TextStyleSpec(...),
-        //          outsideLabelStyleSpec: new charts.TextStyleSpec(...)),
         defaultRenderer: new charts.ArcRendererConfig(
             arcWidth: 60,
             arcRendererDecorators: [new charts.ArcLabelDecorator()]));
@@ -284,20 +265,322 @@ class DonutAutoLabelChart extends StatelessWidget {
         domainFn: (LinearSales sales, _) => sales.year,
         measureFn: (LinearSales sales, _) => sales.sales,
         data: data,
-        // Set a label accessor to control the text of the arc label.
         labelAccessorFn: (LinearSales row, _) => '${row.year}',
       )
     ];
   }
 }
 
-/// Sample linear data type.
 class LinearSales {
   final int year;
   final int sales;
   final Color color;
 
   LinearSales(this.year, this.sales, this.color);
+}
+
+class AddPage extends StatefulWidget {
+  AddPage({Key key}) : super(key: key);
+
+  @override
+  _AddPageState createState() => _AddPageState();
+}
+
+class _AddPageState extends State<AddPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: Text("Ajout Location / Paiement"),
+          centerTitle: true,
+        ),
+        body: FloatingPage());
+  }
+}
+
+class FloatingPage extends StatefulWidget {
+  @override
+  _FloatingButtonState createState() => _FloatingButtonState();
+}
+
+class _FloatingButtonState extends State<FloatingPage>
+    with SingleTickerProviderStateMixin {
+  AnimationController animationController;
+  Animation degOneTranslationAnimation,
+      degTwoTranslationAnimation,
+      degThreeTranslationAnimation;
+  Animation rotationAnimation;
+
+  double getRadiansFromDegree(double degree) {
+    double unitRadian = 57.295779513;
+    return degree / unitRadian;
+  }
+
+  @override
+  void initState() {
+    animationController =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 250));
+    degOneTranslationAnimation = TweenSequence([
+      TweenSequenceItem<double>(
+          tween: Tween<double>(begin: 0.0, end: 1.2), weight: 75.0),
+      TweenSequenceItem<double>(
+          tween: Tween<double>(begin: 1.2, end: 1.0), weight: 25.0),
+    ]).animate(animationController);
+    degTwoTranslationAnimation = TweenSequence([
+      TweenSequenceItem<double>(
+          tween: Tween<double>(begin: 0.0, end: 1.4), weight: 55.0),
+      TweenSequenceItem<double>(
+          tween: Tween<double>(begin: 1.4, end: 1.0), weight: 45.0),
+    ]).animate(animationController);
+    degThreeTranslationAnimation = TweenSequence([
+      TweenSequenceItem<double>(
+          tween: Tween<double>(begin: 0.0, end: 1.75), weight: 35.0),
+      TweenSequenceItem<double>(
+          tween: Tween<double>(begin: 1.75, end: 1.0), weight: 65.0),
+    ]).animate(animationController);
+    rotationAnimation = Tween<double>(begin: 180.0, end: 0.0).animate(
+        CurvedAnimation(parent: animationController, curve: Curves.easeOut));
+    super.initState();
+    animationController.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Size size = MediaQuery
+        .of(context)
+        .size;
+    return Scaffold(
+        body: Container(
+          width: size.width,
+          height: size.height,
+          child: Stack(
+            children: <Widget>[
+              Positioned(
+                  right: 30,
+                  bottom: 30,
+                  child: Stack(
+                    alignment: Alignment.bottomRight,
+                    children: <Widget>[
+                      IgnorePointer(
+                        child: Container(
+                          color: Colors.black.withOpacity(0),
+                          // comment or change to transparent color
+                          height: 150.0,
+                          width: 150.0,
+                        ),
+                      ),
+                      Transform.translate(
+                        offset: Offset.fromDirection(getRadiansFromDegree(270),
+                            degOneTranslationAnimation.value * 100),
+                        child: Transform(
+                          transform: Matrix4.rotationZ(
+                              getRadiansFromDegree(rotationAnimation.value))
+                            ..scale(degOneTranslationAnimation.value),
+                          alignment: Alignment.center,
+                          child: CircularButton(
+                              color: Colors.blue,
+                              width: 50,
+                              height: 50,
+                              icon: Icon(
+                                Icons.search,
+                                color: Colors.white,
+                              ),
+                              onClick: () {
+                                animationController.reverse();
+                                showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialogSearchWidget();
+                                    });
+                              }),
+                        ),
+                      ),
+                      Transform.translate(
+                        offset: Offset.fromDirection(getRadiansFromDegree(225),
+                            degTwoTranslationAnimation.value * 100),
+                        child: Transform(
+                          transform: Matrix4.rotationZ(
+                              getRadiansFromDegree(rotationAnimation.value))
+                            ..scale(degTwoTranslationAnimation.value),
+                          alignment: Alignment.center,
+                          child: CircularButton(
+                            color: Colors.red,
+                            width: 50,
+                            height: 50,
+                            icon: Icon(
+                              Icons.add_circle,
+                              color: Colors.white,
+                            ),
+                            onClick: () {
+                              print('Second button');
+                            },
+                          ),
+                        ),
+                      ),
+                      Transform.translate(
+                        offset: Offset.fromDirection(getRadiansFromDegree(180),
+                            degThreeTranslationAnimation.value * 100),
+                        child: Transform(
+                          transform: Matrix4.rotationZ(
+                              getRadiansFromDegree(rotationAnimation.value))
+                            ..scale(degThreeTranslationAnimation.value),
+                          alignment: Alignment.center,
+                          child: CircularButton(
+                            color: Colors.orangeAccent,
+                            width: 50,
+                            height: 50,
+                            icon: Icon(
+                              Icons.person,
+                              color: Colors.white,
+                            ),
+                            onClick: () {
+                              print('Third Button');
+                            },
+                          ),
+                        ),
+                      ),
+                      Transform(
+                        transform: Matrix4.rotationZ(
+                            getRadiansFromDegree(rotationAnimation.value)),
+                        alignment: Alignment.center,
+                        child: CircularButton(
+                          color: Colors.green,
+                          width: 60,
+                          height: 60,
+                          icon: Icon(
+                            Icons.add,
+                            color: Colors.white,
+                          ),
+                          onClick: () {
+                            if (animationController.isCompleted) {
+                              animationController.reverse();
+                            } else {
+                              animationController.forward();
+                            }
+                          },
+                        ),
+                      )
+                    ],
+                  ))
+            ],
+          ),
+        ));
+  }
+}
+
+class AlertDialogSearchWidget extends StatefulWidget {
+  AlertDialogSearchWidget({Key key}) : super(key: key);
+
+  @override
+  _AlertDialogSearch createState() => _AlertDialogSearch();
+}
+
+class _AlertDialogSearch extends State {
+  final _formKey = GlobalKey<FormState>();
+  DateTime selectedDate = DateTime.now();
+  String _selectedDate = 'Choisir une date';
+
+  Future<void> _selectDate(BuildContext context) async {
+    if (selectedDate != null)
+      setState(() {
+        _selectedDate = new DateFormat.yMMMMd("fr_FR").format(selectedDate);
+      });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      content: Stack(
+        overflow: Overflow.visible,
+        children: <Widget>[
+          Positioned(
+            right: -40.0,
+            top: -40.0,
+            child: InkResponse(
+              onTap: () {
+                Navigator.of(context).pop();
+              },
+              child: CircleAvatar(
+                child: Icon(Icons.close),
+                backgroundColor: Colors.red,
+              ),
+            ),
+          ),
+          Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: OutlineButton.icon(
+                    icon: Icon(Icons.calendar_today),
+                    color: Colors.black,
+                    label: Text(_selectedDate),
+                    onPressed: () {
+                      DatePicker.showDatePicker(
+                          context,
+                          showTitleActions: true,
+                          onChanged: (date) {
+                            print('change $date');
+                          },
+                          onConfirm: (date) {
+                            selectedDate = date;
+                            _selectDate(context);
+                          },
+                          currentTime: selectedDate,
+                          locale: LocaleType.fr);
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: TextFormField(),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: RaisedButton.icon(
+                    icon: Icon(Icons.search),
+                    color: Colors.green,
+                    textColor: Colors.white,
+                    label: Text("Rechercher"),
+                    onPressed: () {
+                      if (_formKey.currentState.validate()) {
+                        _formKey.currentState.save();
+                      }
+                    },
+                  ),
+                )
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CircularButton extends StatelessWidget {
+  final double width;
+  final double height;
+  final Color color;
+  final Icon icon;
+  final Function onClick;
+
+  CircularButton(
+      {this.color, this.width, this.height, this.icon, this.onClick});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      width: width,
+      height: height,
+      child: IconButton(icon: icon, enableFeedback: true, onPressed: onClick),
+    );
+  }
 }
 
 class CalendarPage extends StatefulWidget {
@@ -309,7 +592,8 @@ class CalendarPage extends StatefulWidget {
   _CalendarPageState createState() => _CalendarPageState();
 }
 
-class _CalendarPageState extends State<CalendarPage> with TickerProviderStateMixin {
+class _CalendarPageState extends State<CalendarPage>
+    with TickerProviderStateMixin {
   Map<DateTime, List> _events;
   List _selectedEvents;
   AnimationController _animationController;
@@ -321,21 +605,57 @@ class _CalendarPageState extends State<CalendarPage> with TickerProviderStateMix
     final _selectedDay = DateTime.now();
 
     _events = {
-      _selectedDay.subtract(Duration(days: 30)): ['Event A0', 'Event B0', 'Event C0'],
+      _selectedDay.subtract(Duration(days: 30)): [
+        'Event A0',
+        'Event B0',
+        'Event C0'
+      ],
       _selectedDay.subtract(Duration(days: 27)): ['Event A1'],
-      _selectedDay.subtract(Duration(days: 20)): ['Event A2', 'Event B2', 'Event C2', 'Event D2'],
+      _selectedDay.subtract(Duration(days: 20)): [
+        'Event A2',
+        'Event B2',
+        'Event C2',
+        'Event D2'
+      ],
       _selectedDay.subtract(Duration(days: 16)): ['Event A3', 'Event B3'],
-      _selectedDay.subtract(Duration(days: 10)): ['Event A4', 'Event B4', 'Event C4'],
-      _selectedDay.subtract(Duration(days: 4)): ['Event A5', 'Event B5', 'Event C5'],
+      _selectedDay.subtract(Duration(days: 10)): [
+        'Event A4',
+        'Event B4',
+        'Event C4'
+      ],
+      _selectedDay.subtract(Duration(days: 4)): [
+        'Event A5',
+        'Event B5',
+        'Event C5'
+      ],
       _selectedDay.subtract(Duration(days: 2)): ['Event A6', 'Event B6'],
       _selectedDay: ['Event A7', 'Event B7', 'Event C7', 'Event D7'],
-      _selectedDay.add(Duration(days: 1)): ['Event A8', 'Event B8', 'Event C8', 'Event D8'],
-      _selectedDay.add(Duration(days: 3)): Set.from(['Event A9', 'Event A9', 'Event B9']).toList(),
-      _selectedDay.add(Duration(days: 7)): ['Event A10', 'Event B10', 'Event C10'],
+      _selectedDay.add(Duration(days: 1)): [
+        'Event A8',
+        'Event B8',
+        'Event C8',
+        'Event D8'
+      ],
+      _selectedDay.add(Duration(days: 3)):
+      Set.from(['Event A9', 'Event A9', 'Event B9']).toList(),
+      _selectedDay.add(Duration(days: 7)): [
+        'Event A10',
+        'Event B10',
+        'Event C10'
+      ],
       _selectedDay.add(Duration(days: 11)): ['Event A11', 'Event B11'],
-      _selectedDay.add(Duration(days: 17)): ['Event A12', 'Event B12', 'Event C12', 'Event D12'],
+      _selectedDay.add(Duration(days: 17)): [
+        'Event A12',
+        'Event B12',
+        'Event C12',
+        'Event D12'
+      ],
       _selectedDay.add(Duration(days: 22)): ['Event A13', 'Event B13'],
-      _selectedDay.add(Duration(days: 26)): ['Event A14', 'Event B14', 'Event C14'],
+      _selectedDay.add(Duration(days: 26)): [
+        'Event A14',
+        'Event B14',
+        'Event C14'
+      ],
     };
 
     _selectedEvents = _events[_selectedDay] ?? [];
@@ -363,11 +683,13 @@ class _CalendarPageState extends State<CalendarPage> with TickerProviderStateMix
     });
   }
 
-  void _onVisibleDaysChanged(DateTime first, DateTime last, CalendarFormat format) {
+  void _onVisibleDaysChanged(DateTime first, DateTime last,
+      CalendarFormat format) {
     print('CALLBACK: _onVisibleDaysChanged');
   }
 
-  void _onCalendarCreated(DateTime first, DateTime last, CalendarFormat format) {
+  void _onCalendarCreated(DateTime first, DateTime last,
+      CalendarFormat format) {
     print('CALLBACK: _onCalendarCreated');
   }
 
@@ -384,37 +706,11 @@ class _CalendarPageState extends State<CalendarPage> with TickerProviderStateMix
           // Switch out 2 lines below to play with TableCalendar's settings
           //-----------------------
 //          _buildTableCalendar(),
-           _buildTableCalendarWithBuilders(),
+          _buildTableCalendarWithBuilders(),
           const SizedBox(height: 8.0),
           Expanded(child: _buildEventList()),
         ],
       ),
-    );
-  }
-
-  // Simple TableCalendar configuration (using Styles)
-  Widget _buildTableCalendar() {
-    return TableCalendar(
-      calendarController: _calendarController,
-      events: _events,
-      startingDayOfWeek: StartingDayOfWeek.monday,
-      calendarStyle: CalendarStyle(
-        selectedColor: Colors.deepOrange[400],
-        todayColor: Colors.deepOrange[200],
-        markersColor: Colors.brown[700],
-        markersMaxAmount: 3,
-        outsideDaysVisible: false,
-      ),
-      headerStyle: HeaderStyle(
-        formatButtonTextStyle: TextStyle().copyWith(color: Colors.white, fontSize: 15.0),
-        formatButtonDecoration: BoxDecoration(
-          color: Colors.deepOrange[400],
-          borderRadius: BorderRadius.circular(16.0),
-        ),
-      ),
-      onDaySelected: _onDaySelected,
-      onVisibleDaysChanged: _onVisibleDaysChanged,
-      onCalendarCreated: _onCalendarCreated,
     );
   }
 
@@ -516,7 +812,9 @@ class _CalendarPageState extends State<CalendarPage> with TickerProviderStateMix
         shape: BoxShape.rectangle,
         color: _calendarController.isSelected(date)
             ? Colors.brown[500]
-            : _calendarController.isToday(date) ? Colors.brown[300] : Colors.blue[400],
+            : _calendarController.isToday(date)
+            ? Colors.brown[300]
+            : Colors.blue[400],
       ),
       width: 16.0,
       height: 16.0,
@@ -548,10 +846,11 @@ class _CalendarPageState extends State<CalendarPage> with TickerProviderStateMix
           border: Border.all(width: 0.8),
           borderRadius: BorderRadius.circular(12.0),
         ),
-        margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+        margin:
+        const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
         child: ListTile(
           title: Text(event.toString()),
-          onTap: () => print('$event tapped!'),
+          onTap: () => {print('${event.toString()} tapped !')},
         ),
       ))
           .toList(),
