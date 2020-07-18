@@ -1,5 +1,8 @@
+import 'dart:ui';
+
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
@@ -28,24 +31,15 @@ class MyApp extends StatelessWidget {
 
 class TousDashBoard extends StatelessWidget {
   static TextStyle optionStyle =
-      TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
+  TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         Flexible(
-          flex: 1,
-          child: Center(
-            child: Text(
-              "Revenu / Maison",
-              style: optionStyle,
-            ),
-          ),
-        ),
-        Flexible(
           flex: 3,
-          child: GroupedBarChart.withSampleData(),
+          child: SimpleSeriesLegend.withSampleData(),
         ),
         Flexible(
           flex: 3,
@@ -75,6 +69,8 @@ class MyStatefulWidget extends StatefulWidget {
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   int _selectedIndex = 0;
   static List<Widget> _widgetOptions = <Widget>[
+    CalendarPage(title: "Calendrier"),
+    AddPage(),
     Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -90,9 +86,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                 bottom: TabBar(
                   tabs: [
                     Tab(icon: Icon(Icons.home)),
-                    Tab(icon: Icon(Icons.exposure_zero)),
-                    Tab(icon: Icon(Icons.looks_one)),
-                    Tab(icon: Icon(Icons.looks_two)),
+                    Tab(text: "RC"),
+                    Tab(text: "Etage 1"),
+                    Tab(text: "Etage 2"),
                   ],
                 ),
               ),
@@ -109,8 +105,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         ),
       ],
     ),
-    CalendarPage(title: "Calendrier"),
-    AddPage(),
   ];
 
   void _onBottomNavBarItemTapped(int index) {
@@ -131,16 +125,16 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
           iconSize: 38,
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard),
-              title: Text('Tableau de bord'),
-            ),
-            BottomNavigationBarItem(
               icon: Icon(Icons.calendar_today),
               title: Text('Calendrier'),
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.add_circle_outline),
               title: Text('Ajout'),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard),
+              title: Text('Tableau de bord'),
             ),
           ],
           currentIndex: _selectedIndex,
@@ -152,17 +146,17 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   }
 }
 
-class GroupedBarChart extends StatelessWidget {
+class SimpleSeriesLegend extends StatelessWidget {
   final List<charts.Series> seriesList;
   final bool animate;
 
-  GroupedBarChart(this.seriesList, {this.animate});
+  SimpleSeriesLegend(this.seriesList, {this.animate});
 
-  factory GroupedBarChart.withSampleData() {
-    return new GroupedBarChart(
+  factory SimpleSeriesLegend.withSampleData() {
+    return new SimpleSeriesLegend(
       _createSampleData(),
       // Disable animations for image tests.
-      animate: true,
+      animate: false,
     );
   }
 
@@ -172,59 +166,65 @@ class GroupedBarChart extends StatelessWidget {
       seriesList,
       animate: animate,
       barGroupingType: charts.BarGroupingType.grouped,
+      // Add the series legend behavior to the chart to turn on series legends.
+      // By default the legend will display above the chart.
+      behaviors: [new charts.SeriesLegend()],
     );
   }
 
   /// Create series list with multiple series
-  static List<charts.Series<OrdinalSales, String>> _createSampleData() {
-    final desktopSalesData = [
-      new OrdinalSales('Juillet', 15),
-      new OrdinalSales('Aout', 25),
+  static List<charts.Series<Bar, String>> _createSampleData() {
+    final rcData = [
+      new Bar('Juin', 5),
+      new Bar('Juillet', 17),
+      new Bar('Aout', 22),
     ];
 
-    final tableSalesData = [
-      new OrdinalSales('Juillet', 25),
-      new OrdinalSales('Aout', 30),
+    final premierData = [
+      new Bar('Juin', 4),
+      new Bar('Juillet', 21),
+      new Bar('Aout', 25),
     ];
 
-    final mobileSalesData = [
-      new OrdinalSales('Juillet', 19),
-      new OrdinalSales('Aout', 27),
+    final deuxiemeData = [
+      new Bar('Juin', 3),
+      new Bar('Juillet', 17),
+      new Bar('Aout', 19),
     ];
 
     return [
-      new charts.Series<OrdinalSales, String>(
+      new charts.Series<Bar, String>(
         id: 'Rez de Chaussé',
         colorFn: (_, __) => charts.MaterialPalette.red.shadeDefault,
-        domainFn: (OrdinalSales sales, _) => sales.year,
-        measureFn: (OrdinalSales sales, _) => sales.sales,
-        data: desktopSalesData,
+        domainFn: (Bar sales, _) => sales.year,
+        measureFn: (Bar sales, _) => sales.sales,
+        data: rcData,
       ),
-      new charts.Series<OrdinalSales, String>(
+      new charts.Series<Bar, String>(
         id: 'Etage 1',
         colorFn: (_, __) => charts.MaterialPalette.green.shadeDefault,
-        domainFn: (OrdinalSales sales, _) => sales.year,
-        measureFn: (OrdinalSales sales, _) => sales.sales,
-        data: tableSalesData,
+        domainFn: (Bar sales, _) => sales.year,
+        measureFn: (Bar sales, _) => sales.sales,
+        data: premierData,
       ),
-      new charts.Series<OrdinalSales, String>(
+      new charts.Series<Bar, String>(
         id: 'Etage 2',
-        labelAccessorFn: (OrdinalSales sales, _) => '${sales.sales.toString()}',
+        labelAccessorFn: (Bar sales, _) => '${sales.sales.toString()}',
         colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
-        domainFn: (OrdinalSales sales, _) => sales.year,
-        measureFn: (OrdinalSales sales, _) => sales.sales,
-        data: mobileSalesData,
+        domainFn: (Bar sales, _) => sales.year,
+        measureFn: (Bar sales, _) => sales.sales,
+        data: deuxiemeData,
       ),
     ];
   }
 }
 
 /// Sample ordinal data type.
-class OrdinalSales {
+class Bar {
   final String year;
   final int sales;
 
-  OrdinalSales(this.year, this.sales);
+  Bar(this.year, this.sales);
 }
 
 class DonutAutoLabelChart extends StatelessWidget {
@@ -250,33 +250,33 @@ class DonutAutoLabelChart extends StatelessWidget {
   }
 
   /// Create one series with sample hard coded data.
-  static List<charts.Series<LinearSales, int>> _createSampleData() {
+  static List<charts.Series<Slice, int>> _createSampleData() {
     final data = [
-      new LinearSales(10, 10, Colors.red),
-      new LinearSales(15, 15, Colors.green),
-      new LinearSales(20, 20, Colors.blue),
+      new Slice(10, 10, Colors.red),
+      new Slice(15, 15, Colors.green),
+      new Slice(20, 20, Colors.blue),
     ];
 
     return [
-      new charts.Series<LinearSales, int>(
-        id: 'Sales',
-        colorFn: (LinearSales sales, __) =>
+      new charts.Series<Slice, int>(
+        id: 'Availability',
+        colorFn: (Slice sales, __) =>
             charts.ColorUtil.fromDartColor(sales.color),
-        domainFn: (LinearSales sales, _) => sales.year,
-        measureFn: (LinearSales sales, _) => sales.sales,
+        domainFn: (Slice sales, _) => sales.pourcentage,
+        measureFn: (Slice sales, _) => sales.number,
         data: data,
-        labelAccessorFn: (LinearSales row, _) => '${row.year}',
+        labelAccessorFn: (Slice row, _) => '${row.pourcentage}',
       )
     ];
   }
 }
 
-class LinearSales {
-  final int year;
-  final int sales;
+class Slice {
+  final int pourcentage;
+  final int number;
   final Color color;
 
-  LinearSales(this.year, this.sales, this.color);
+  Slice(this.pourcentage, this.number, this.color);
 }
 
 class AddPage extends StatefulWidget {
@@ -348,9 +348,7 @@ class _FloatingButtonState extends State<FloatingPage>
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery
-        .of(context)
-        .size;
+    Size size = MediaQuery.of(context).size;
     return Scaffold(
         body: Container(
           width: size.width,
@@ -392,7 +390,7 @@ class _FloatingButtonState extends State<FloatingPage>
                                 showDialog(
                                     context: context,
                                     builder: (BuildContext context) {
-                                      return AlertDialogSearchWidget();
+                                      return SearchDialogWidget();
                                     });
                               }),
                         ),
@@ -414,7 +412,12 @@ class _FloatingButtonState extends State<FloatingPage>
                               color: Colors.white,
                             ),
                             onClick: () {
-                              print('Second button');
+                              animationController.reverse();
+                              showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AddLocationForm();
+                                  });
                             },
                           ),
                         ),
@@ -432,7 +435,7 @@ class _FloatingButtonState extends State<FloatingPage>
                             width: 50,
                             height: 50,
                             icon: Icon(
-                              Icons.person,
+                              Icons.attach_money,
                               color: Colors.white,
                             ),
                             onClick: () {
@@ -470,8 +473,81 @@ class _FloatingButtonState extends State<FloatingPage>
   }
 }
 
-class AlertDialogSearchWidget extends StatefulWidget {
-  AlertDialogSearchWidget({Key key}) : super(key: key);
+// Define a custom Form widget.
+class AddLocationForm extends StatefulWidget {
+  @override
+  AddLocationFormState createState() {
+    return AddLocationFormState();
+  }
+}
+
+class AddLocationFormState extends State<AddLocationForm> {
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      content: Stack(
+        overflow: Overflow.visible,
+        children: <Widget>[
+          Positioned(
+            right: -40.0,
+            top: -40.0,
+            child: InkResponse(
+              onTap: () {
+                Navigator.of(context).pop();
+              },
+              child: CircleAvatar(
+                child: Icon(Icons.close),
+                backgroundColor: Colors.red,
+              ),
+            ),
+          ),
+          Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: TextFormField(
+                      decoration: new InputDecoration(
+                          contentPadding: EdgeInsets.all(8.0),
+                          prefixIcon: Icon(Icons.person_add),
+                          labelText: "Nom Prènom"),
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return 'Veuillez entrer un NOM et Prènom';
+                        }
+                        return null;
+                      },
+                    )),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: RaisedButton.icon(
+                    icon: Icon(Icons.add_circle_outline),
+                    color: Colors.green,
+                    textColor: Colors.white,
+                    label: Text("Ajouter"),
+                    onPressed: () {
+                      if (_formKey.currentState.validate()) {
+                        Scaffold.of(context).showSnackBar(
+                            SnackBar(content: Text('Processing Data')));
+                      }
+                    },
+                  ),
+                )
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class SearchDialogWidget extends StatefulWidget {
+  SearchDialogWidget({Key key}) : super(key: key);
 
   @override
   _AlertDialogSearch createState() => _AlertDialogSearch();
@@ -479,6 +555,7 @@ class AlertDialogSearchWidget extends StatefulWidget {
 
 class _AlertDialogSearch extends State {
   final _formKey = GlobalKey<FormState>();
+  int _dayNumber = 1;
   DateTime selectedDate = DateTime.now();
   String _selectedDate = 'Choisir une date';
 
@@ -520,9 +597,7 @@ class _AlertDialogSearch extends State {
                     color: Colors.black,
                     label: Text(_selectedDate),
                     onPressed: () {
-                      DatePicker.showDatePicker(
-                          context,
-                          showTitleActions: true,
+                      DatePicker.showDatePicker(context, showTitleActions: true,
                           onChanged: (date) {
                             print('change $date');
                           },
@@ -537,7 +612,26 @@ class _AlertDialogSearch extends State {
                 ),
                 Padding(
                   padding: EdgeInsets.all(8.0),
-                  child: TextFormField(),
+                  child: new Container(
+                      padding: const EdgeInsets.all(10.0),
+                      child: new Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          new TextField(
+                            decoration: new InputDecoration(
+                                prefixIcon: Icon(Icons.calendar_today),
+                                suffix: Text(" jours"),
+                                labelText: "Nombre de jours"),
+                            keyboardType: TextInputType.number,
+                            inputFormatters: <TextInputFormatter>[
+                              WhitelistingTextInputFormatter.digitsOnly
+                            ], // Only number
+                            onChanged: (number) {
+                              print(number);
+                            }, // s can
+                          ),
+                        ],
+                      )),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -569,8 +663,7 @@ class CircularButton extends StatelessWidget {
   final Icon icon;
   final Function onClick;
 
-  CircularButton(
-      {this.color, this.width, this.height, this.icon, this.onClick});
+  CircularButton({this.color, this.width, this.height, this.icon, this.onClick});
 
   @override
   Widget build(BuildContext context) {
